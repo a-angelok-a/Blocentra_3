@@ -1,0 +1,30 @@
+﻿<Window x:Class="Blocentra_3.Views.MainView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Blocentra_3.Views"
+        mc:Ignorable="d"
+        xmlns:prism="http://prismlibrary.com/"
+        Title="MainView" 
+        MinHeight="100" 
+        MinWidth="428"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        ResizeMode="CanResizeWithGrip"
+        WindowStartupLocation="CenterScreen"
+        Background="Transparent">
+    
+    <Grid>
+        <!-- Основной фон и рамка -->
+        <Border Background="#282D33"
+        BorderBrush="#3A4149"
+        BorderThickness="5"
+        CornerRadius="8,8,0,8" />
+        
+        <DockPanel>
+               <ContentControl prism:RegionManager.RegionName="HeaderRegion" DockPanel.Dock="Top"/>
+               <ContentControl prism:RegionManager.RegionName="SplashScreenRegion"/>   
+        </DockPanel>
+    </Grid>
+</Window>
