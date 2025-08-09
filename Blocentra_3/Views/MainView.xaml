@@ -13,18 +13,42 @@
         AllowsTransparency="True"
         ResizeMode="CanResizeWithGrip"
         WindowStartupLocation="CenterScreen"
-        Background="Transparent">
-    
-    <Grid>
-        <!-- Основной фон и рамка -->
-        <Border Background="#282D33"
-        BorderBrush="#3A4149"
-        BorderThickness="5"
-        CornerRadius="8,8,0,8" />
-        
-        <DockPanel>
-               <ContentControl prism:RegionManager.RegionName="HeaderRegion" DockPanel.Dock="Top"/>
-               <ContentControl prism:RegionManager.RegionName="SplashScreenRegion"/>   
-        </DockPanel>
-    </Grid>
+        Background="Transparent"
+        prism:ViewModelLocator.AutoWireViewModel="True">
+    <DockPanel>
+
+        <Grid>
+            <!-- Основной фон и рамка -->
+            <Border Background="#282D33"
+            BorderBrush="#3A4149"
+            BorderThickness="5"
+            CornerRadius="8,8,0,8" />
+
+            
+
+            <DockPanel>
+                
+                <ContentControl prism:RegionManager.RegionName="HeaderRegion" DockPanel.Dock="Top"/>
+                <ContentControl prism:RegionManager.RegionName="SplashScreenRegion"/>
+
+                <TextBlock DockPanel.Dock="Top" Margin="15" Text="Select Cryptocurrency:" Foreground="White" FontSize="10" FontWeight="Bold"/>
+                <ComboBox DockPanel.Dock="Top" Margin="10,0,0,10"  Height="28" Width="150"
+                          ItemsSource="{Binding Currencies}"
+                          SelectedItem="{Binding Symbol, Mode=TwoWay}"
+                          HorizontalAlignment="Left"
+                          Background="#1F2326"/>         
+
+                <Border Background="#1F2326" CornerRadius="6" Padding="8"
+                        HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="12"
+                        Opacity="0.95">
+                    <TextBlock Text="{Binding PriceInfo}" Foreground="White" FontSize="14" />
+                </Border>
+
+            </DockPanel>
+
+            
+            
+
+        </Grid>
+    </DockPanel>
 </Window>
