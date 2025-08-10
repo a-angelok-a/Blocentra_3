@@ -6,49 +6,58 @@
         xmlns:local="clr-namespace:Blocentra_3.Views"
         mc:Ignorable="d"
         xmlns:prism="http://prismlibrary.com/"
-        Title="MainView" 
+        Title="MainView"
+        Height="600"
+        Width="1000"
         MinHeight="100" 
         MinWidth="428"
         WindowStyle="None"
         AllowsTransparency="True"
         ResizeMode="CanResizeWithGrip"
         WindowStartupLocation="CenterScreen"
-        Background="Transparent"
+        Background="#282D33"
         prism:ViewModelLocator.AutoWireViewModel="True">
-    <DockPanel>
 
-        <Grid>
-            <!-- Основной фон и рамка -->
-            <Border Background="#282D33"
-            BorderBrush="#3A4149"
-            BorderThickness="5"
-            CornerRadius="8,8,0,8" />
+    <Grid>
+        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
-            
+        <Grid Grid.Row="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-            <DockPanel>
-                
-                <ContentControl prism:RegionManager.RegionName="HeaderRegion" DockPanel.Dock="Top"/>
-                <ContentControl prism:RegionManager.RegionName="SplashScreenRegion"/>
+            <ContentControl prism:RegionManager.RegionName="HeaderRegion" Grid.Row="0"/>
 
-                <TextBlock DockPanel.Dock="Top" Margin="15" Text="Select Cryptocurrency:" Foreground="White" FontSize="10" FontWeight="Bold"/>
-                <ComboBox DockPanel.Dock="Top" Margin="10,0,0,10"  Height="28" Width="150"
+            <StackPanel Grid.Row="1" Orientation="Vertical" Margin="15,5,0,10" HorizontalAlignment="Left">
+                <TextBlock Margin="5,10,0,0" Text="Select Cryptocurrency:" Foreground="White" FontSize="13" FontWeight="Bold" />
+                <ComboBox Height="28" Width="150"
                           ItemsSource="{Binding Currencies}"
                           SelectedItem="{Binding Symbol, Mode=TwoWay}"
-                          HorizontalAlignment="Left"
-                          Background="#1F2326"/>         
-
-                <Border Background="#1F2326" CornerRadius="6" Padding="8"
-                        HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="12"
-                        Opacity="0.95">
-                    <TextBlock Text="{Binding PriceInfo}" Foreground="White" FontSize="14" />
-                </Border>
-
-            </DockPanel>
-
-            
-            
+                          Background="#1F2326"
+                          Margin="5,10,0,0"
+                          HorizontalAlignment="Left"/>
+            </StackPanel>
 
         </Grid>
-    </DockPanel>
+
+        <DockPanel Grid.Row="1" Margin="12,0,12,0">
+            <TextBlock DockPanel.Dock="Top" Margin="5,10,0,10" Foreground="White" FontSize="14" Text="Prices from exchanges:" FontWeight="Bold"/>
+            <Border Margin="0,3,0,100" Background="#1F2326" CornerRadius="6" Padding="8" Opacity="0.95">
+                <ItemsControl ItemsSource="{Binding PricesFromExchanges}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}" Foreground="White" FontSize="14"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Border>
+        </DockPanel>
+
+        <ContentControl prism:RegionManager.RegionName="SplashScreenRegion" />
+    </Grid>
 </Window>

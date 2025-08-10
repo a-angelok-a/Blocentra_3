@@ -1,13 +1,13 @@
 ﻿using Blocentra_3.Services;
 using Blocentra_3.Views;
 using System.Collections.ObjectModel;
-using System.Printing;
+using System.Windows.Threading;
 
 namespace Blocentra_3.ViewModels
 {
     public class MainViewModel : BindableBase
     {
-        private readonly ICryptoApiService _apiService;
+        private readonly List<ICryptoApiService> _apiService;
         private readonly IRegionManager _regionManager;
 
         private string _symbol = "btc";
@@ -17,39 +17,46 @@ namespace Blocentra_3.ViewModels
             set => SetProperty(ref _symbol, value);
         }
 
-        private string _priceInfo;
-        public string PriceInfo
-        {
-            get => _priceInfo;
-            set => SetProperty(ref _priceInfo, value);
-        }
+        public ObservableCollection<string> PricesFromExchanges { get; } = new();
 
         public ObservableCollection<string> Currencies { get; } = new()
         {
-            "bitcoin",
-            "ethereum",
-            "ripple",
-            "litecoin",
-            "cardano",
-            "dogecoin",
-            "polkadot",
-            "stellar",
-            "chainlink",
-            "binancecoin"
+             "btc",
+             "eth",
+             "usdt",
+             "bnb",
+             "ada"
         };
-        public MainViewModel(IRegionManager regionManager, ICryptoApiService apiService)
+        public MainViewModel(IRegionManager regionManager, IEnumerable<ICryptoApiService> apiService)
         {
-            _apiService = apiService;
+            _apiService = new List<ICryptoApiService>(apiService);
             _regionManager = regionManager;
+
             InitializeApp();
+
+            var timer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(60)
+            };
+            timer.Tick += async (s, e) => await LoadCurrencyAsync();
+            timer.Start();
         }
         public async Task LoadCurrencyAsync()
         {
-            var result = await _apiService.GetCurrencyAsync(Symbol);
+            PricesFromExchanges.Clear();
 
-            PriceInfo = result.IsSuccess
-                ? $"{result.Currency.Symbol}: {result.Currency.PriceUsd} USD ({result.Currency.ExchangeName})"
-                : $"Ошибка: {result.ErrorMessage}";
+            foreach (var service in _apiService)
+            {
+                var result = await service.GetCurrencyAsync(Symbol);
+                if (result.IsSuccess)
+                {
+                    PricesFromExchanges.Add($"{result.Currency.Symbol}: {result.Currency.PriceUsd} USD ({result.Currency.ExchangeName})");
+                }
+                else
+                {
+                    PricesFromExchanges.Add($"Ошибка {service.ExchangeName}: {result.ErrorMessage}");
+                }
+            }
         }
 
         private async void InitializeApp()
@@ -62,7 +69,7 @@ namespace Blocentra_3.ViewModels
 
             _regionManager.RequestNavigate("HeaderRegion", nameof(HeaderView));
             await LoadCurrencyAsync();
-            //_regionManager.RequestNavigate("MainRegion", nameof(MainView));
+            
         }
     }
 }

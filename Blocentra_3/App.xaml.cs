@@ -1,5 +1,4 @@
 ﻿using Blocentra_3.Services;
-using Blocentra_3.ViewModels;
 using Blocentra_3.Views;
 using System.Net.Http;
 using System.Windows;
@@ -20,8 +19,9 @@ namespace Blocentra_3
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
 
-            containerRegistry.Register<IWindowService, WindowService>();
-            containerRegistry.Register<ICryptoApiService, CoinGeckoApiService>();
+            containerRegistry.Register<ICryptoApiService, BitfinexApiService>("Bitfinex");
+            containerRegistry.Register<ICryptoApiService, CoinGeckoApiService>("CoinGecko");
+            containerRegistry.Register<ICryptoApiService, BitstampApiService>("Bitstamp");
 
             containerRegistry.RegisterInstance(new HttpClient());
             containerRegistry.RegisterForNavigation<SplashScreenView>();
