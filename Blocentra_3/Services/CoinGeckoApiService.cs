@@ -56,7 +56,9 @@ namespace Blocentra_3.Services
                 var currency = new CryptoCurrency
                 {
                     Symbol = symbol.ToUpper(),
-                    PriceUsd = price,
+                    //PriceUsd = price,
+                    BidPrice = price,   // нет bid в CoinGecko, поэтому ставим цену
+                    AskPrice = price,
                     ExchangeName = ExchangeName
                 };
                 return CryptoResult.Ok(currency);

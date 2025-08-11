@@ -3,6 +3,8 @@ using Blocentra_3.Models;
 using Newtonsoft.Json.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
+using System.Threading.Tasks;
 
 namespace Blocentra_3.Services
 {
@@ -43,15 +45,19 @@ namespace Blocentra_3.Services
                 var response = await _httpClient.GetStringAsync(url);
                 var json = JObject.Parse(response);
 
-                if (json.Count < 7) 
-                 return CryptoResult.Fail("Некорректный ответ от Bitstamp");
+                if (json["last"] == null || json["bid"] == null || json["ask"] == null)
+                    return CryptoResult.Fail("Некорректный ответ от Bitstamp");
 
-                decimal price = json["last"].ToObject<decimal>();
+                //decimal lastPrice = json["last"].Value<decimal>();
+                decimal bid = json["bid"].Value<decimal>();
+                decimal ask = json["ask"].Value<decimal>();
 
                 var Currency = new CryptoCurrency
                 {
                     Symbol = sym,
-                    PriceUsd = price,
+                    //PriceUsd = lastPrice,
+                    BidPrice = bid,
+                    AskPrice = ask,
                     ExchangeName = ExchangeName
                 };
 

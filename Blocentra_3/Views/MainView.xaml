@@ -22,7 +22,8 @@
         
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="2*"/>
+            <RowDefinition Height="1*"/>
         </Grid.RowDefinitions>
 
         <Grid Grid.Row="0">
@@ -47,7 +48,7 @@
 
         <DockPanel Grid.Row="1" Margin="12,0,12,0">
             <TextBlock DockPanel.Dock="Top" Margin="5,10,0,10" Foreground="White" FontSize="14" Text="Prices from exchanges:" FontWeight="Bold"/>
-            <Border Margin="0,3,0,100" Background="#1F2326" CornerRadius="6" Padding="8" Opacity="0.95">
+            <Border Margin="0,3,0,10" Background="#1F2326" CornerRadius="6" Padding="8" Opacity="0.95">
                 <ItemsControl ItemsSource="{Binding PricesFromExchanges}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
@@ -57,6 +58,26 @@
                 </ItemsControl>
             </Border>
         </DockPanel>
+
+        <Grid Grid.Row="2" Margin="15,5,15,10">
+            <StackPanel>
+                <TextBlock Text="Best deals:" Foreground="White" FontSize="16" FontWeight="Bold" Margin="0,0,0,8"/>
+
+                <TextBlock Foreground="White" FontSize="14" Margin="0,0,0,10">
+                    <Run Text="Cheapest to buy at: " />
+                    <Run Text="{Binding LowestPriceCurrency.ExchangeName}" FontWeight="SemiBold" />
+                    <Run Text=" - " />
+                    <Run Text="{Binding LowestPriceCurrency.AskPrice, StringFormat={}{0:C}}" FontWeight="SemiBold"/>
+                </TextBlock>
+
+                <TextBlock Foreground="White" FontSize="14">
+                    <Run Text="Most profitable to sell at: " />
+                    <Run Text="{Binding HighestPriceCurrency.ExchangeName}" FontWeight="SemiBold" />
+                    <Run Text=" - " />
+                    <Run Text="{Binding HighestPriceCurrency.BidPrice, StringFormat={}{0:C}}" FontWeight="SemiBold"/>
+                </TextBlock>
+            </StackPanel>
+        </Grid>
 
         <ContentControl prism:RegionManager.RegionName="SplashScreenRegion" />
     </Grid>
