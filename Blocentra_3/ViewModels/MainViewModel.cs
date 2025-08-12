@@ -8,9 +8,14 @@ namespace Blocentra_3.ViewModels
 {
     public class MainViewModel : BindableBase
     {
+        private readonly ICryptoHistoryService _historyService;
+        private readonly ITimeSeriesPredictionService _predictionService;
         private readonly List<ICryptoApiService> _apiService;
         private readonly IRegionManager _regionManager;
         private readonly IPriceAnalysisService _priceAnalysisService;
+
+        public ObservableCollection<float> DailyForecast { get; } = new ObservableCollection<float>();
+        public ObservableCollection<float> MonthlyForecast { get; } = new ObservableCollection<float>();
 
         private string _symbol = "btc";
         public string Symbol
@@ -41,6 +46,9 @@ namespace Blocentra_3.ViewModels
             set => SetProperty(ref _highestPriceCurrency, value);
         }
 
+        private List<CryptoData> _historicalData = new();
+        private List<CryptoData> _predictedData = new();
+
         public ObservableCollection<string> Currencies { get; } = new()
         {
              "btc",
@@ -49,11 +57,15 @@ namespace Blocentra_3.ViewModels
              "bnb",
              "ada"
         };
-        public MainViewModel(IRegionManager regionManager, IEnumerable<ICryptoApiService> apiService, IPriceAnalysisService priceAnalysisService)
+        public MainViewModel(IRegionManager regionManager, IEnumerable<ICryptoApiService> apiService, IPriceAnalysisService priceAnalysisService, ITimeSeriesPredictionService predictionService, ICryptoHistoryService historyService)
         {
             _apiService = new List<ICryptoApiService>(apiService);
             _regionManager = regionManager;
             _priceAnalysisService = priceAnalysisService;
+            _predictionService = predictionService;
+            _historyService = historyService;
+
+            _historicalData = _historyService.LoadHistory();
 
             InitializeApp();
 
@@ -76,6 +88,13 @@ namespace Blocentra_3.ViewModels
                 if (result.IsSuccess)
                 {
                     PricesFromExchanges.Add(result.Currency);
+
+
+                    _historicalData.Add(new CryptoData
+                    {
+                        Timestamp = DateTime.UtcNow,
+                        Price = (float)result.Currency.BidPrice
+                    });
                 }
                 else
                 {
@@ -89,8 +108,59 @@ namespace Blocentra_3.ViewModels
                 }
             }
 
+            _historyService.SaveHistory(_historicalData);
+
+            await UpdateForecastsAsync();
+
             LowestPriceCurrency = _priceAnalysisService.GetLowerPrice(results);
             HighestPriceCurrency = _priceAnalysisService.GetHighestPrice(results);
+        }
+
+        private async Task UpdateForecastsAsync()
+        {
+            const int MaxDataPoints = 90;
+            _historicalData = _historicalData
+                .OrderBy(d => d.Timestamp)
+                .Skip(Math.Max(0, _historicalData.Count - MaxDataPoints))
+                .ToList();
+
+            _predictedData = _predictedData
+                .OrderBy(d => d.Timestamp)
+                .Skip(Math.Max(0, _predictedData.Count - MaxDataPoints))
+                .ToList();
+
+            var combinedData = _historicalData.Concat(_predictedData)
+                                              .OrderBy(d => d.Timestamp)
+                                              .ToList();
+
+            if (!combinedData.Any())
+                return;
+
+            await Task.Run(() =>
+            {
+                _predictionService.TrainModel(combinedData, horizon: 30);
+
+                var dailyForecast = _predictionService.Forecast(1);
+                var monthlyForecast = _predictionService.Forecast(1);
+
+                App.Current.Dispatcher.Invoke(() =>
+                {
+                    DailyForecast.Clear();
+                    foreach (var val in dailyForecast)
+                        DailyForecast.Add(val);
+
+                    MonthlyForecast.Clear();
+                    foreach (var val in monthlyForecast)
+                        MonthlyForecast.Add(val);
+                });
+
+                var lastTimestamp = combinedData.Max(d => d.Timestamp);
+                _predictedData = monthlyForecast.Select((price, idx) => new CryptoData
+                {
+                    Timestamp = lastTimestamp.AddDays(idx + 1),
+                    Price = price
+                }).ToList();
+            });
         }
 
         private async void InitializeApp()
@@ -103,7 +173,6 @@ namespace Blocentra_3.ViewModels
 
             _regionManager.RequestNavigate("HeaderRegion", nameof(HeaderView));
             await LoadCurrencyAsync();
-            
         }
     }
 }

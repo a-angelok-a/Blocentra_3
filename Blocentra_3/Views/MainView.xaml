@@ -24,6 +24,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="2*"/>
             <RowDefinition Height="1*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <Grid Grid.Row="0">
@@ -68,7 +69,6 @@
                        RowHeight="58">
 
                 <DataGrid.Resources>
-                    <!-- Стиль для заголовков -->
                     <Style TargetType="DataGridColumnHeader">
                         <Setter Property="Background" Value="#2E343A"/>
                         <Setter Property="Foreground" Value="White"/>
@@ -78,7 +78,6 @@
                         <Setter Property="HorizontalContentAlignment" Value="Center"/>
                     </Style>
 
-                    <!-- Стиль выделенной строки -->
                     <Style TargetType="DataGridRow">
                         <Setter Property="Background" Value="#1F2326"/>
                         <Setter Property="Foreground" Value="White"/>
@@ -114,27 +113,49 @@
                 </DataGrid.Columns>
             </DataGrid>
         </Grid>
-        
-       
+
+
         <Grid Grid.Row="2" Margin="15,5,15,10">
-            <StackPanel>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0">
                 <TextBlock Text="Best deals:" Foreground="White" FontSize="16" FontWeight="Bold" Margin="0,0,0,8"/>
 
                 <TextBlock Foreground="White" FontSize="14" Margin="0,0,0,10">
-                    <Run Text="Cheapest to buy at: " />
-                    <Run Text="{Binding LowestPriceCurrency.ExchangeName}" FontWeight="SemiBold" />
-                    <Run Text=" - " />
-                    <Run Text="{Binding LowestPriceCurrency.AskPrice, StringFormat={}{0:C}}" FontWeight="SemiBold"/>
+                        <Run Text="Cheapest to buy at: " />
+                        <Run Text="{Binding LowestPriceCurrency.ExchangeName}" FontWeight="SemiBold" />
+                        <Run Text=" - " />
+                        <Run Text="{Binding LowestPriceCurrency.AskPrice, StringFormat={}{0:C}}" FontWeight="SemiBold"/>
                 </TextBlock>
 
-                <TextBlock Foreground="White" FontSize="14">
+                <TextBlock Foreground="White" FontSize="14" Margin="0,0,0,20">
                     <Run Text="Most profitable to sell at: " />
                     <Run Text="{Binding HighestPriceCurrency.ExchangeName}" FontWeight="SemiBold" />
                     <Run Text=" - " />
                     <Run Text="{Binding HighestPriceCurrency.BidPrice, StringFormat={}{0:C}}" FontWeight="SemiBold"/>
                 </TextBlock>
             </StackPanel>
+
+            <StackPanel Grid.Column="1">
+                <TextBlock Text="Price Forecast:" Foreground="White" FontSize="16" FontWeight="Bold" Margin="0,0,0,8" />
+
+                <TextBlock Foreground="White" FontSize="14" Margin="0,0,0,10">
+                        <Run Text="Next Day: " />
+                        <Run Text="{Binding DailyForecast[0], StringFormat={}{0:F2}}" FontWeight="SemiBold" />
+                </TextBlock>
+
+                <TextBlock Foreground="White" FontSize="14" Margin="0,0,0,10">
+                    <Run Text="Next Month: " />
+                    <Run Text="{Binding MonthlyForecast[0], StringFormat={}{0:F2}}" FontWeight="SemiBold" />
+                </TextBlock>
+            </StackPanel>
         </Grid>
+
+
+
 
         <ContentControl prism:RegionManager.RegionName="SplashScreenRegion" />
     </Grid>
