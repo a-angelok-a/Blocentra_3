@@ -5,7 +5,7 @@ namespace Blocentra_3.ViewModels
 {
     public class HeaderViewModel : BindableBase
     {
-        private IWindowService _windowService;
+        private readonly IWindowService _windowService;
         public DelegateCommand CloseCommand { get; }
 
         public DelegateCommand MaximizeCommand { get; }

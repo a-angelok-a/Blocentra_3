@@ -2,12 +2,10 @@
 using Blocentra_3.Models;
 using Newtonsoft.Json.Linq;
 using System.Net.Http;
-using System.Security.Cryptography;
-using System.Threading.Tasks;
 
 namespace Blocentra_3.Services
 {
-    class BitfinexApiService : ICryptoApiService
+    public class BitfinexApiService : ICryptoApiService
     {
         public string ExchangeName => "Bitfinex";
         private readonly HttpClient _httpClient;
@@ -45,14 +43,12 @@ namespace Blocentra_3.Services
 
                 decimal bid = json[0].Value<decimal>();
                 decimal ask = json[2].Value<decimal>();
-                //decimal lastPrice = json[6].Value<decimal>();
 
                 var Currency = new CryptoCurrency
                 {
                     Symbol = sym,
                     BidPrice = bid,
                     AskPrice = ask,
-                    //PriceUsd = lastPrice,
                     ExchangeName = ExchangeName
                 };
 

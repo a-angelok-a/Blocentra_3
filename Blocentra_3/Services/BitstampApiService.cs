@@ -1,10 +1,6 @@
-﻿
-using Blocentra_3.Models;
+﻿using Blocentra_3.Models;
 using Newtonsoft.Json.Linq;
 using System.Net.Http;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
-using System.Threading.Tasks;
 
 namespace Blocentra_3.Services
 {
@@ -38,7 +34,7 @@ namespace Blocentra_3.Services
                 var sym = symbol.Trim().ToUpperInvariant();
 
                 if (!SupportedSymbols.Contains(symbol.Trim().ToLowerInvariant()))
-                    return CryptoResult.Fail($"Неподдерживаемый символ: {symbol}");
+                    return CryptoResult.Fail($"Неподдерживаемый символ: {sym}");
 
                 string url = $"https://www.bitstamp.net/api/v2/ticker/{symbol}usd/";
 
@@ -48,14 +44,12 @@ namespace Blocentra_3.Services
                 if (json["last"] == null || json["bid"] == null || json["ask"] == null)
                     return CryptoResult.Fail("Некорректный ответ от Bitstamp");
 
-                //decimal lastPrice = json["last"].Value<decimal>();
                 decimal bid = json["bid"].Value<decimal>();
                 decimal ask = json["ask"].Value<decimal>();
 
                 var Currency = new CryptoCurrency
                 {
                     Symbol = sym,
-                    //PriceUsd = lastPrice,
                     BidPrice = bid,
                     AskPrice = ask,
                     ExchangeName = ExchangeName

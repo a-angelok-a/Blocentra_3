@@ -25,7 +25,7 @@ namespace Blocentra_3.ViewModels
             }
         }
 
-        public ObservableCollection<string> PricesFromExchanges { get; } = new();
+        public ObservableCollection<CryptoCurrency> PricesFromExchanges { get; } = new();
 
         private CryptoCurrency _lowestPriceCurrency;
         public CryptoCurrency LowestPriceCurrency
@@ -75,11 +75,17 @@ namespace Blocentra_3.ViewModels
             {
                 if (result.IsSuccess)
                 {
-                    PricesFromExchanges.Add($"{result.Currency.Symbol}: Bid = {result.Currency.BidPrice} USD, Ask = {result.Currency.AskPrice} USD ({result.Currency.ExchangeName})");
+                    PricesFromExchanges.Add(result.Currency);
                 }
                 else
                 {
-                    PricesFromExchanges.Add($"Ошибка {result.Currency?.ExchangeName ?? "Unknown"}: {result.ErrorMessage}");
+                    PricesFromExchanges.Add(new CryptoCurrency
+                    {
+                        Symbol = "Ошибка",
+                        BidPrice = 0m,
+                        AskPrice = 0m,
+                        ExchangeName = result.Currency?.ExchangeName ?? "Unknown"
+                    });
                 }
             }
 

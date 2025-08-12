@@ -1,5 +1,4 @@
-﻿
-using Blocentra_3.Models;
+﻿using Blocentra_3.Models;
 using Newtonsoft.Json.Linq;
 using System.Net.Http;
 
@@ -56,7 +55,6 @@ namespace Blocentra_3.Services
                 var currency = new CryptoCurrency
                 {
                     Symbol = symbol.ToUpper(),
-                    //PriceUsd = price,
                     BidPrice = price,   // нет bid в CoinGecko, поэтому ставим цену
                     AskPrice = price,
                     ExchangeName = ExchangeName

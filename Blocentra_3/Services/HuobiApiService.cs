@@ -49,7 +49,6 @@ namespace Blocentra_3.Services
                 var Currency = new CryptoCurrency
                 {
                     Symbol = sym,
-                    //riceUsd = lastPrice,
                     BidPrice = bid,
                     AskPrice = ask,
                     ExchangeName = ExchangeName
