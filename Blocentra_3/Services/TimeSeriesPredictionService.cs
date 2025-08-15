@@ -1,14 +1,15 @@
 ﻿using Blocentra_3.Models;
 using Microsoft.ML;
-using Microsoft.ML.Data;
+using Microsoft.ML.TimeSeries;
+using Microsoft.ML.Transforms.TimeSeries;
 
 namespace Blocentra_3.Services
 {
     public class TimeSeriesPredictionService : ITimeSeriesPredictionService
     {
         private readonly MLContext _mlContext;
-        private ITransformer _model;
-        private List<CryptoDataWithIndex> _trainingData;
+        private TimeSeriesPredictionEngine<CryptoData, ForecastOutput> _forecastEngine;
+        private List<CryptoData> _trainingData;
 
         public TimeSeriesPredictionService()
         {
@@ -20,59 +21,60 @@ namespace Blocentra_3.Services
             if (historicalData == null || !historicalData.Any())
                 throw new ArgumentException("Historical data cannot be empty");
 
-            _trainingData = PrepareDataWithIndex(historicalData);
+            _trainingData = historicalData.OrderBy(d => d.Timestamp).ToList();
 
             var trainingDataView = _mlContext.Data.LoadFromEnumerable(_trainingData);
 
-            var pipeline = _mlContext.Transforms.CopyColumns(outputColumnName: "Label", inputColumnName: nameof(CryptoDataWithIndex.Price))
-                .Append(_mlContext.Transforms.Concatenate("Features", nameof(CryptoDataWithIndex.TimeIndex)))
-                .Append(_mlContext.Regression.Trainers.FastTree());
+            var forecastingPipeline = _mlContext.Forecasting.ForecastBySsa(
+                outputColumnName: nameof(ForecastOutput.ForecastedPrice),
+                inputColumnName: nameof(CryptoData.Price),
+                windowSize: Math.Min(7, _trainingData.Count), 
+                seriesLength: _trainingData.Count,
+                trainSize: _trainingData.Count,
+                horizon: horizon,
+                confidenceLevel: 0.95f,
+                confidenceLowerBoundColumn: nameof(ForecastOutput.LowerBoundPrice),
+                confidenceUpperBoundColumn: nameof(ForecastOutput.UpperBoundPrice));
 
-            _model = pipeline.Fit(trainingDataView);
+            var model = forecastingPipeline.Fit(trainingDataView);
+
+            _forecastEngine = model.CreateTimeSeriesEngine<CryptoData, ForecastOutput>(_mlContext);
         }
 
         public float[] Forecast(int horizon)
         {
-            if (_model == null)
+            if (_forecastEngine == null)
                 throw new InvalidOperationException("Model has not been trained.");
 
-            var predictionEngine = _mlContext.Model.CreatePredictionEngine<CryptoDataWithIndex, PricePrediction>(_model);
+            var forecast = _forecastEngine.Predict();
 
-            float lastIndex = _trainingData.Max(d => d.TimeIndex);
-            var results = new List<float>();
+            var results = new List<float>(forecast.ForecastedPrice);
 
-            for (int i = 1; i <= horizon; i++)
+            if (horizon > forecast.ForecastedPrice.Length)
             {
-                var input = new CryptoDataWithIndex { TimeIndex = lastIndex + i };
-                var prediction = predictionEngine.Predict(input);
-                results.Add(prediction.Score);
+                var extraHorizon = horizon - forecast.ForecastedPrice.Length;
+                _forecastEngine = _mlContext.Forecasting.ForecastBySsa(
+                    outputColumnName: nameof(ForecastOutput.ForecastedPrice),
+                    inputColumnName: nameof(CryptoData.Price),
+                    windowSize: Math.Min(7, _trainingData.Count),
+                    seriesLength: _trainingData.Count,
+                    trainSize: _trainingData.Count,
+                    horizon: extraHorizon)
+                    .Fit(_mlContext.Data.LoadFromEnumerable(_trainingData))
+                    .CreateTimeSeriesEngine<CryptoData, ForecastOutput>(_mlContext);
+
+                var extraForecast = _forecastEngine.Predict();
+                results.AddRange(extraForecast.ForecastedPrice);
             }
 
-            return results.ToArray();
+            return results.Take(horizon).ToArray();
         }
 
-        private List<CryptoDataWithIndex> PrepareDataWithIndex(IEnumerable<CryptoData> historicalData)
+        private class ForecastOutput
         {
-            var ordered = historicalData.OrderBy(d => d.Timestamp).ToList();
-            var startTime = ordered.First().Timestamp;
-
-            return ordered.Select(d => new CryptoDataWithIndex
-            {
-                TimeIndex = (float)(d.Timestamp - startTime).TotalMinutes,
-                Price = d.Price
-            }).ToList();
-        }
-
-        private class CryptoDataWithIndex
-        {
-            public float TimeIndex { get; set; }
-            public float Price { get; set; }
-        }
-
-        private class PricePrediction
-        {
-            [ColumnName("Score")]
-            public float Score { get; set; }
+            public float[] ForecastedPrice { get; set; }
+            public float[] LowerBoundPrice { get; set; }
+            public float[] UpperBoundPrice { get; set; }
         }
     }
 }
