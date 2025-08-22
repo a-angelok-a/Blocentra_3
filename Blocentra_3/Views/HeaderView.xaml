@@ -11,76 +11,78 @@
              prism:ViewModelLocator.AutoWireViewModel="True"
              Height="32"
              Background="#1E2227">
+
+    <!-- Root grid defines layout for drag zone and window control buttons -->
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition />
-            <!-- Заголовок -->
+            <!-- Column for Minimize button -->
             <ColumnDefinition Width="Auto" />
-            <!-- Свернуть -->
+            <!-- Column for Maximize/Restore button -->
             <ColumnDefinition Width="Auto" />
-            <!-- Развернуть -->
+            <!-- Column for Close button -->
             <ColumnDefinition Width="Auto" />
-            <!-- Закрыть -->
         </Grid.ColumnDefinitions>
 
-        <!-- drag-зона -->
+        <!-- Drag area: allows user to drag window by clicking the title text -->
         <TextBlock Text="Blocentra"
-           FontSize="14"
-           Foreground="White"
-           VerticalAlignment="Center"
-           Margin="10,0,10,0"
-           Height="18">
-           <i:Interaction.Behaviors>
+                   FontSize="14"
+                   Foreground="White"
+                   VerticalAlignment="Center"
+                   Margin="10,0,10,0"
+                   Height="18">
+            <i:Interaction.Behaviors>
+                <!-- Enable dragging for this TextBlock using custom behavior -->
                 <behaviors:WindowDragBehavior EnableDrag="True"/>
-           </i:Interaction.Behaviors>
+            </i:Interaction.Behaviors>
         </TextBlock>
 
-        <!-- Свернуть -->
+        <!-- Minimize button -->
         <Button Grid.Column="1"
-        Content="−"
-        Width="40"
-        Height="32"
-        Background="Transparent"
-        Foreground="White"
-        BorderThickness="0"
-        FontSize="18"
-        Command="{Binding MinimizeCommand}"
-        HorizontalAlignment="Center"
-        VerticalAlignment="Center"
-        HorizontalContentAlignment="Center"
-        VerticalContentAlignment="Center"
-        Cursor="Hand"/>
+                Content="−"
+                Width="40"
+                Height="32"
+                Background="Transparent"
+                Foreground="White"
+                BorderThickness="0"
+                FontSize="18"
+                Command="{Binding MinimizeCommand}"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                Cursor="Hand"/>
 
-        <!-- Развернуть -->
+        <!-- Maximize/Restore button -->
         <Button Grid.Column="2"
-        Content="▭"
-        Width="40"
-        Height="32"
-        Background="Transparent"
-        Foreground="White"
-        BorderThickness="0"
-        FontSize="14"
-        Command="{Binding MaximizeCommand}"
-        HorizontalAlignment="Center"
-        VerticalAlignment="Center"
-        HorizontalContentAlignment="Center"
-        VerticalContentAlignment="Center"
-        Cursor="Hand"/>
+                Content="▭"
+                Width="40"
+                Height="32"
+                Background="Transparent"
+                Foreground="White"
+                BorderThickness="0"
+                FontSize="14"
+                Command="{Binding MaximizeCommand}"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                Cursor="Hand"/>
 
-        <!-- Закрыть -->
+        <!-- Close button -->
         <Button Grid.Column="3"
-        Content="✕"
-        Width="40"
-        Height="32"
-        Background="Transparent"
-        Foreground="White"
-        BorderThickness="0"
-        FontSize="14"
-        Command="{Binding CloseCommand}"
-        HorizontalAlignment="Center"
-        VerticalAlignment="Center"
-        HorizontalContentAlignment="Center"
-        VerticalContentAlignment="Center"
-        Cursor="Hand"/>
+                Content="✕"
+                Width="40"
+                Height="32"
+                Background="Transparent"
+                Foreground="White"
+                BorderThickness="0"
+                FontSize="14"
+                Command="{Binding CloseCommand}"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                Cursor="Hand"/>
     </Grid>
 </UserControl>

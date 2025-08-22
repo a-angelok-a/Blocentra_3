@@ -18,23 +18,30 @@
         Background="#282D33"
         prism:ViewModelLocator.AutoWireViewModel="True">
 
+    <!-- Root grid divides the window into header, main data, forecasts, and splash screen -->
     <Grid>
-        
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <!-- Header -->
             <RowDefinition Height="2*"/>
+            <!-- DataGrid / main content -->
             <RowDefinition Height="1*"/>
+            <!-- Forecasts and best deals -->
             <RowDefinition Height="Auto"/>
+            <!-- SplashScreen region -->
         </Grid.RowDefinitions>
 
+        <!-- Header section with region for HeaderView and cryptocurrency selector -->
         <Grid Grid.Row="0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
+            <!-- Header region (contains draggable title and window buttons) -->
             <ContentControl prism:RegionManager.RegionName="HeaderRegion" Grid.Row="0"/>
 
+            <!-- Cryptocurrency selection ComboBox -->
             <StackPanel Grid.Row="1" Orientation="Vertical" Margin="15,5,0,10" HorizontalAlignment="Left">
                 <TextBlock Margin="5,10,0,0" Text="Select Cryptocurrency:" Foreground="White" FontSize="13" FontWeight="Bold" />
                 <ComboBox Height="28" Width="150"
@@ -44,9 +51,9 @@
                           Margin="5,10,0,0"
                           HorizontalAlignment="Left"/>
             </StackPanel>
-
         </Grid>
 
+        <!-- DataGrid showing prices from multiple exchanges -->
         <Grid Grid.Row="1" Margin="15,5,15,10">
             <DataGrid ItemsSource="{Binding PricesFromExchanges}"
                       AutoGenerateColumns="False"
@@ -66,8 +73,9 @@
                       CanUserDeleteRows="False"
                       HorizontalGridLinesBrush="#3A3F44"
                       VerticalGridLinesBrush="#3A3F44"
-                       RowHeight="58">
+                      RowHeight="58">
 
+                <!-- Styling for column headers and rows -->
                 <DataGrid.Resources>
                     <Style TargetType="DataGridColumnHeader">
                         <Setter Property="Background" Value="#2E343A"/>
@@ -94,6 +102,7 @@
                     </Style>
                 </DataGrid.Resources>
 
+                <!-- Columns for DataGrid -->
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Symbol" Binding="{Binding Symbol}" Width="*" />
 
@@ -114,13 +123,14 @@
             </DataGrid>
         </Grid>
 
-
+        <!-- Forecasts and best deals section -->
         <Grid Grid.Row="2" Margin="15,5,15,10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
+            <!-- Best deals info -->
             <StackPanel Grid.Column="0">
                 <TextBlock Text="Best deals:" Foreground="White" FontSize="16" FontWeight="Bold" Margin="0,0,0,8"/>
 
@@ -139,6 +149,7 @@
                 </TextBlock>
             </StackPanel>
 
+            <!-- Price forecast info -->
             <StackPanel Grid.Column="1">
                 <TextBlock Text="Price Forecast:" Foreground="White" FontSize="16" FontWeight="Bold" Margin="0,0,0,8" />
 
@@ -154,9 +165,7 @@
             </StackPanel>
         </Grid>
 
-
-
-
+        <!-- Splash screen region (can display a temporary splash UI while loading) -->
         <ContentControl prism:RegionManager.RegionName="SplashScreenRegion" />
     </Grid>
 </Window>

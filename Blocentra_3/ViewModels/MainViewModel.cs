@@ -6,6 +6,11 @@ using System.Windows.Threading;
 
 namespace Blocentra_3.ViewModels
 {
+    /// <summary>
+    /// Main ViewModel responsible for managing cryptocurrency data, 
+    /// including fetching prices from multiple exchanges, maintaining 
+    /// historical data, and generating price forecasts.
+    /// </summary>
     public class MainViewModel : BindableBase
     {
         private readonly ICryptoHistoryService _historyService;
@@ -14,10 +19,21 @@ namespace Blocentra_3.ViewModels
         private readonly IRegionManager _regionManager;
         private readonly IPriceAnalysisService _priceAnalysisService;
 
+        /// <summary>
+        /// Forecast for the next day(s) based on historical and predicted data.
+        /// </summary>
         public ObservableCollection<float> DailyForecast { get; } = new ObservableCollection<float>();
+
+        /// <summary>
+        /// Forecast for the next month based on historical and predicted data.
+        /// </summary>
         public ObservableCollection<float> MonthlyForecast { get; } = new ObservableCollection<float>();
 
         private string _symbol = "btc";
+        /// <summary>
+        /// The cryptocurrency symbol to display and analyze (e.g., BTC, ETH).
+        /// Changing the symbol triggers reloading of data from APIs.
+        /// </summary>
         public string Symbol
         {
             get => _symbol;
@@ -30,9 +46,15 @@ namespace Blocentra_3.ViewModels
             }
         }
 
+        /// <summary>
+        /// Collection of prices retrieved from multiple exchanges.
+        /// </summary>
         public ObservableCollection<CryptoCurrency> PricesFromExchanges { get; } = new();
 
         private CryptoCurrency _lowestPriceCurrency;
+        /// <summary>
+        /// The cryptocurrency with the lowest bid price among all exchanges.
+        /// </summary>
         public CryptoCurrency LowestPriceCurrency
         {
             get => _lowestPriceCurrency;
@@ -40,6 +62,9 @@ namespace Blocentra_3.ViewModels
         }
 
         private CryptoCurrency _highestPriceCurrency;
+        /// <summary>
+        /// The cryptocurrency with the highest bid price among all exchanges.
+        /// </summary>
         public CryptoCurrency HighestPriceCurrency
         {
             get => _highestPriceCurrency;
@@ -49,6 +74,9 @@ namespace Blocentra_3.ViewModels
         private List<CryptoData> _historicalData = new();
         private List<CryptoData> _predictedData = new();
 
+        /// <summary>
+        /// Predefined list of cryptocurrency symbols available for selection in the UI.
+        /// </summary>
         public ObservableCollection<string> Currencies { get; } = new()
         {
              "btc",
@@ -57,7 +85,17 @@ namespace Blocentra_3.ViewModels
              "bnb",
              "ada"
         };
-        public MainViewModel(IRegionManager regionManager, IEnumerable<ICryptoApiService> apiService, IPriceAnalysisService priceAnalysisService, ITimeSeriesPredictionService predictionService, ICryptoHistoryService historyService)
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="MainViewModel"/>.
+        /// Sets up services, loads historical data, and starts periodic refresh.
+        /// </summary>
+        public MainViewModel(
+            IRegionManager regionManager,
+            IEnumerable<ICryptoApiService> apiService,
+            IPriceAnalysisService priceAnalysisService,
+            ITimeSeriesPredictionService predictionService,
+            ICryptoHistoryService historyService)
         {
             _apiService = new List<ICryptoApiService>(apiService);
             _regionManager = regionManager;
@@ -69,6 +107,7 @@ namespace Blocentra_3.ViewModels
 
             InitializeApp();
 
+            // Setup a timer to refresh currency data every 60 seconds.
             var timer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromSeconds(60)
@@ -76,10 +115,16 @@ namespace Blocentra_3.ViewModels
             timer.Tick += async (s, e) => await LoadCurrencyAsync();
             timer.Start();
         }
+
+        /// <summary>
+        /// Loads cryptocurrency data from all APIs and updates relevant properties.
+        /// Updates historical data and forecasts as well.
+        /// </summary>
         public async Task LoadCurrencyAsync()
         {
             PricesFromExchanges.Clear();
 
+            // Fetch data from all API services in parallel.
             var tasks = _apiService.Select(service => service.GetCurrencyAsync(Symbol)).ToList();
             var results = await Task.WhenAll(tasks);
 
@@ -89,7 +134,6 @@ namespace Blocentra_3.ViewModels
                 {
                     PricesFromExchanges.Add(result.Currency);
 
-
                     _historicalData.Add(new CryptoData
                     {
                         Timestamp = DateTime.UtcNow,
@@ -98,9 +142,10 @@ namespace Blocentra_3.ViewModels
                 }
                 else
                 {
+                    // If API call fails, add a placeholder with error info.
                     PricesFromExchanges.Add(new CryptoCurrency
                     {
-                        Symbol = "Ошибка",
+                        Symbol = "Error",
                         BidPrice = 0m,
                         AskPrice = 0m,
                         ExchangeName = result.Currency?.ExchangeName ?? "Unknown"
@@ -112,13 +157,19 @@ namespace Blocentra_3.ViewModels
 
             await UpdateForecastsAsync();
 
+            // Update lowest/highest price currencies for UI display.
             LowestPriceCurrency = _priceAnalysisService.GetLowerPrice(results);
             HighestPriceCurrency = _priceAnalysisService.GetHighestPrice(results);
         }
 
+        /// <summary>
+        /// Updates daily and monthly forecasts using historical and predicted data.
+        /// Limits the number of data points to avoid performance issues.
+        /// </summary>
         private async Task UpdateForecastsAsync()
         {
             const int MaxDataPoints = 90;
+
             _historicalData = _historicalData
                 .OrderBy(d => d.Timestamp)
                 .Skip(Math.Max(0, _historicalData.Count - MaxDataPoints))
@@ -140,9 +191,10 @@ namespace Blocentra_3.ViewModels
             {
                 _predictionService.TrainModel(combinedData, horizon: 30);
 
-                var dailyForecast = _predictionService.Forecast(1);
-                var monthlyForecast = _predictionService.Forecast(1);
+                var monthlyForecast = _predictionService.Forecast(30);
+                var dailyForecast = new[] { monthlyForecast.First() };
 
+                // Update UI collections on the main thread.
                 App.Current.Dispatcher.Invoke(() =>
                 {
                     DailyForecast.Clear();
@@ -163,13 +215,16 @@ namespace Blocentra_3.ViewModels
             });
         }
 
+        /// <summary>
+        /// Initializes the application, removes the splash screen, and navigates to header view.
+        /// Also triggers initial data loading after a brief delay.
+        /// </summary>
         private async void InitializeApp()
         {
             await Task.Delay(3000);
 
             var splashScreenRegion = _regionManager.Regions["SplashScreenRegion"];
             splashScreenRegion.RemoveAll();
-
 
             _regionManager.RequestNavigate("HeaderRegion", nameof(HeaderView));
             await LoadCurrencyAsync();
